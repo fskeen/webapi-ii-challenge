@@ -11,7 +11,7 @@ server.use(express.json());
  * GET: /api/posts - returns array of ALL posts -- DONE
  * GET: /api/posts/:id - return a specific post -- DONE
  * GET: /api/posts/:id/comments - return all comments on a specific post -- DONE
- * DELETE: /api/posts/:id - delete a specific post
+ * DELETE: /api/posts/:id - delete a specific post -- DONE
  * PUT: /api/posts/:id - edit a specific post
  */
 
@@ -23,6 +23,7 @@ server.use(express.json());
     Posts.insert(post)
         .then(() => {
             if (!post.title || !post.contents) {
+                // req.abort()
                 res.status(400).json({
                     errorMessage: "Please provide title and contents for the post"
                 })
@@ -37,7 +38,7 @@ server.use(express.json());
         })
  })
 
-//  POST: /api/posts/:id/comments - post comments for specific post
+//  POST: /api/posts/:id/comments - post comments for specific post -- DONE
 
  server.post('./api/posts/:id/comments', (req, res) => {
     const id = req.params.id;
@@ -69,7 +70,7 @@ server.get('/api/posts', (req, res) => {
         })
 })
 
-// GET: /api/posts/:id - return a specific post -- sorta DONE?
+// GET: /api/posts/:id - return a specific post -- DONE
 
 server.get('/api/posts/:id', (req, res) => {
     const id = req.params.id
@@ -92,7 +93,7 @@ server.get('/api/posts/:id', (req, res) => {
         })
 })
 
-// GET: /api/posts/:id/comments - return all comments on a specific post
+// GET: /api/posts/:id/comments - return all comments on a specific post -- DONE
 
 server.get('/api/posts/:id/comments', (req, res) => {
     const id = req.params.id
@@ -114,19 +115,12 @@ server.get('/api/posts/:id/comments', (req, res) => {
         })
 })
 
-// DELETE: /api/posts/:id - delete a specific post
+// DELETE: /api/posts/:id - delete a specific post -- DONE
 
 server.delete('/api/posts/:id', (req, res) => {
     const id = req.params.id
-    console.log(req.params)
 
-    let deletedPost = null
-    let error = {
-        message: "The post with the specified ID does not exist."
-    }
-
-    Posts
-    .findById(id)
+    Posts.findById(id)
         .then((post) => {
             if (post.length === 0) {
                 res.status(404).json({
@@ -134,40 +128,52 @@ server.delete('/api/posts/:id', (req, res) => {
                 })
             } else {
                 Posts.remove(id)
-                    .then((count) => {
+                    .then(() => {
                         res.status(200).json(post)   
                     })
                     .catch(() => {
                         res.status(500).json({
-                            errorMessage: "The post information could not be retrieved."
+                            errorMessage: "The post could not be removed."
                         })
                     })
             }
         })
         .catch(() => {
             res.status(500).json({
-                errorMessage: "The post information could not be retrieved."
+                errorMessage: "The post could not be removed."
             })
         })
-        
 
-    console.log("i am the deleted post: ", deletedPost)
-
-    // if (deletedPost) {
-    //     Posts.remove(id)
-    //     .then((count) => {
-    //         if (count > 0) {
-    //             res.status(200).json(deletedPost)
-    //         } else {
-    //             res.status(404).json({
-    //                 message: "The post with the specified ID does not exist."
-    //             })
-    //         }
-    //     })
-    // }
-    
 })
 
+// PUT: /api/posts/:id - edit a specific post
+
+server.put('/api/posts/:id', (req, res) => {
+    const id = req.params.id;
+    const editedPost = req.body;
+
+    if (!editedPost.title || !editedPost.contents) {
+        res.status(400).json({
+            errorMessage: "Please provide title and contents for the post."
+        })
+    } else {
+        Posts.update(id, editedPost)
+        .then((edited) => {
+            if (edited) {
+                res.status(200).json(editedPost)
+            } else {
+                res.status(404).json({
+                    message: "The post with the specified ID does not exist."
+                })
+            }
+        })
+        .catch(() => {
+            res.status(500).json({
+                errorMessage: "The post information could not be modified."
+            })
+        })
+    }
+})
 
 
 
