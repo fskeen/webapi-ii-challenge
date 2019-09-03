@@ -9,7 +9,7 @@ server.use(express.json());
  * POST: /api/posts - create a post -- DONE
  * POST: /api/posts/:id/comments - post comments for specific post
  * GET: /api/posts - returns array of ALL posts -- DONE
- * GET: /api/posts/:id - return a specific post
+ * GET: /api/posts/:id - return a specific post -- sorta DONE?
  * GET: /api/posts/:id/comments - return all comments on a specific post
  * DELETE: /api/posts/:id - delete a specific post
  * PUT: /api/posts/:id - edit a specific post
@@ -69,7 +69,7 @@ server.get('/api/posts', (req, res) => {
         })
 })
 
-// GET: /api/posts/:id - return a specific post
+// GET: /api/posts/:id - return a specific post -- sorta DONE?
 
 server.get('/api/posts/:id', (req, res) => {
     const id = req.params.id
@@ -81,7 +81,7 @@ server.get('/api/posts/:id', (req, res) => {
                 res.status(200).json(post)  
             } else {
                 res.status(404).json({
-                    message: "The post with that ID does not exist."
+                    message: "The post with the specified ID does not exist."
                 })
             }
         })
@@ -91,6 +91,30 @@ server.get('/api/posts/:id', (req, res) => {
             })
         })
 })
+
+// GET: /api/posts/:id/comments - return all comments on a specific post
+
+server.get('/api/posts/:id/comments', (req, res) => {
+    const id = req.params.id
+
+    Posts.findPostComments(id)
+        .then((comments) => {
+            if (comments) {
+               res.status(200).json(comments) 
+            } else {
+                res.status(404).json({
+                    message: "The post with the specified ID does not exist."
+                })
+            }
+        })
+        .catch(() => {
+            res.status(500).json({
+                errorMessage: "The comments information could not be retrieved."
+            })
+        })
+})
+
+
 
 
 
