@@ -114,6 +114,59 @@ server.get('/api/posts/:id/comments', (req, res) => {
         })
 })
 
+// DELETE: /api/posts/:id - delete a specific post
+
+server.delete('/api/posts/:id', (req, res) => {
+    const id = req.params.id
+    console.log(req.params)
+
+    let deletedPost = null
+    let error = {
+        message: "The post with the specified ID does not exist."
+    }
+
+    Posts
+    .findById(id)
+        .then((post) => {
+            if (post.length === 0) {
+                res.status(404).json({
+                    message: "The post with the specified ID does not exist."
+                })
+            } else {
+                Posts.remove(id)
+                    .then((count) => {
+                        res.status(200).json(post)   
+                    })
+                    .catch(() => {
+                        res.status(500).json({
+                            errorMessage: "The post information could not be retrieved."
+                        })
+                    })
+            }
+        })
+        .catch(() => {
+            res.status(500).json({
+                errorMessage: "The post information could not be retrieved."
+            })
+        })
+        
+
+    console.log("i am the deleted post: ", deletedPost)
+
+    // if (deletedPost) {
+    //     Posts.remove(id)
+    //     .then((count) => {
+    //         if (count > 0) {
+    //             res.status(200).json(deletedPost)
+    //         } else {
+    //             res.status(404).json({
+    //                 message: "The post with the specified ID does not exist."
+    //             })
+    //         }
+    //     })
+    // }
+    
+})
 
 
 
