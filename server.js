@@ -9,8 +9,8 @@ server.use(express.json());
  * POST: /api/posts - create a post -- DONE
  * POST: /api/posts/:id/comments - post comments for specific post
  * GET: /api/posts - returns array of ALL posts -- DONE
- * GET: /api/posts/:id - return a specific post -- sorta DONE?
- * GET: /api/posts/:id/comments - return all comments on a specific post
+ * GET: /api/posts/:id - return a specific post -- DONE
+ * GET: /api/posts/:id/comments - return all comments on a specific post -- DONE
  * DELETE: /api/posts/:id - delete a specific post
  * PUT: /api/posts/:id - edit a specific post
  */
@@ -76,13 +76,13 @@ server.get('/api/posts/:id', (req, res) => {
 
     Posts.findById(id)
         .then((post) => {
-
-            if (post) {
-                res.status(200).json(post)  
-            } else {
+            if (post.length === 0) {
                 res.status(404).json({
                     message: "The post with the specified ID does not exist."
                 })
+                 
+            } else {
+                res.status(200).json(post) 
             }
         })
         .catch(() => {
@@ -99,12 +99,12 @@ server.get('/api/posts/:id/comments', (req, res) => {
 
     Posts.findPostComments(id)
         .then((comments) => {
-            if (comments) {
-               res.status(200).json(comments) 
-            } else {
-                res.status(404).json({
+            if (comments.length === 0) {
+               res.status(404).json({
                     message: "The post with the specified ID does not exist."
                 })
+            } else {
+                res.status(200).json(comments) 
             }
         })
         .catch(() => {
