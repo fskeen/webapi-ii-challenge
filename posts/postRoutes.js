@@ -1,9 +1,7 @@
-const express = require('express');
-const Posts = require('./data/db.js')
+const express = require("express");
+const Posts = require('../data/db.js')
 
-const server = express();
-
-server.use(express.json());
+const router = express.Router();
 
 /**
  * POST: /api/posts - create a post -- DONE
@@ -17,7 +15,7 @@ server.use(express.json());
 
 // POST: /api/posts - create a post -- DONE
 
- server.post('/api/posts', (req, res) => {
+router.post('/', (req, res) => {
     const post = req.body;
 
     Posts.insert(post)
@@ -40,25 +38,38 @@ server.use(express.json());
 
 //  POST: /api/posts/:id/comments - post comments for specific post -- DONE
 
- server.post('./api/posts/:id/comments', (req, res) => {
-    const id = req.params.id;
+ router.post('/:id/comments', (req, res) => {
+    // const id = req.params
     const comment = req.body
 
-    Posts.insertComment(comment)
-        .then(() => {
-            console.log("hmmm")
-        })
-        .catch(() => {
-            res.status(500).json({
-                errorMessage: "There was an error while saving the comment to the database."
+    if (!comment.text) {
+        res.status(400).json({
+            errorMessage: "Please provide text for the comment." 
+        }) 
+    } else {
+        Posts.insertComment(comment)
+            .then((commentID) => {
+                if (commentID) {
+                    res.status(201).json(comment) 
+                } else {
+                    res.status(404).json({
+                        message: "The post with the specified ID does not exist."
+                    })
+                }
             })
-        })
+            .catch((err) => {
+                console.log(err)
+                res.status(500).json({
+                    errorMessage: "There was an error while saving the comment to the database."
+                })
+            })
+    }
  })
 
 
 //  GET: /api/posts - returns array of ALL posts -- DONE
 
-server.get('/api/posts', (req, res) => {
+router.get('/', (req, res) => {
     Posts.find()
         .then((posts) => {
             res.status(200).json(posts)
@@ -72,7 +83,7 @@ server.get('/api/posts', (req, res) => {
 
 // GET: /api/posts/:id - return a specific post -- DONE
 
-server.get('/api/posts/:id', (req, res) => {
+router.get('/:id', (req, res) => {
     const id = req.params.id
 
     Posts.findById(id)
@@ -95,7 +106,7 @@ server.get('/api/posts/:id', (req, res) => {
 
 // GET: /api/posts/:id/comments - return all comments on a specific post -- DONE
 
-server.get('/api/posts/:id/comments', (req, res) => {
+router.get('/:id/comments', (req, res) => {
     const id = req.params.id
 
     Posts.findPostComments(id)
@@ -117,7 +128,7 @@ server.get('/api/posts/:id/comments', (req, res) => {
 
 // DELETE: /api/posts/:id - delete a specific post -- DONE
 
-server.delete('/api/posts/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
     const id = req.params.id
 
     Posts.findById(id)
@@ -146,9 +157,9 @@ server.delete('/api/posts/:id', (req, res) => {
 
 })
 
-// PUT: /api/posts/:id - edit a specific post
+// PUT: /api/posts/:id - edit a specific post -- DONE
 
-server.put('/api/posts/:id', (req, res) => {
+router.put('/:id', (req, res) => {
     const id = req.params.id;
     const editedPost = req.body;
 
@@ -158,8 +169,8 @@ server.put('/api/posts/:id', (req, res) => {
         })
     } else {
         Posts.update(id, editedPost)
-        .then((edited) => {
-            if (edited) {
+        .then((editSuccess) => {
+            if (editSuccess) {
                 res.status(200).json(editedPost)
             } else {
                 res.status(404).json({
@@ -175,7 +186,4 @@ server.put('/api/posts/:id', (req, res) => {
     }
 })
 
-
-
-
-module.exports = server;
+module.exports = router;
